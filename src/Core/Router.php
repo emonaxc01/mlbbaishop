@@ -6,6 +6,9 @@ class Router
     private static array $routes = [
         'GET' => [],
         'POST' => [],
+        'PUT' => [],
+        'DELETE' => [],
+        'PATCH' => []
     ];
 
     public static function get(string $path, $handler): void
@@ -18,13 +21,35 @@ class Router
         self::$routes['POST'][self::normalize($path)] = $handler;
     }
 
+    public static function put(string $path, $handler): void
+    {
+        self::$routes['PUT'][self::normalize($path)] = $handler;
+    }
+
+    public static function delete(string $path, $handler): void
+    {
+        self::$routes['DELETE'][self::normalize($path)] = $handler;
+    }
+
+    public static function patch(string $path, $handler): void
+    {
+        self::$routes['PATCH'][self::normalize($path)] = $handler;
+    }
+
     public static function dispatch(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         $path = self::normalize($uri);
 
+        // Check for exact match first
         $handler = self::$routes[$method][$path] ?? null;
+        
+        // If no exact match, try to find a dynamic route
+        if ($handler === null) {
+            $handler = self::findDynamicRoute($method, $path);
+        }
+
         if ($handler === null) {
             http_response_code(404);
             echo 'Not Found';
@@ -50,6 +75,25 @@ class Router
 
         http_response_code(500);
         echo 'Invalid route handler';
+    }
+
+    private static function findDynamicRoute(string $method, string $path): ?array
+    {
+        foreach (self::$routes[$method] as $route => $handler) {
+            if (self::matchDynamicRoute($route, $path)) {
+                return $handler;
+            }
+        }
+        return null;
+    }
+
+    private static function matchDynamicRoute(string $route, string $path): bool
+    {
+        // Convert route parameters like {slug} to regex pattern
+        $pattern = preg_replace('/\{[^}]+\}/', '([^/]+)', $route);
+        $pattern = '#^' . $pattern . '$#';
+        
+        return preg_match($pattern, $path);
     }
 
     private static function normalize(string $path): string

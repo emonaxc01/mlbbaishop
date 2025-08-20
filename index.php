@@ -98,7 +98,7 @@ Router::post('/api/convert-price', ['\App\Http\Controllers\GameTopUpController',
 Router::post('/api/orders/create', ['\App\Http\Controllers\GameTopUpController', 'createOrder']);
 Router::get('/api/orders/{identifier}', ['\App\Http\Controllers\GameTopUpController', 'getOrder']);
 Router::post('/api/orders/{userId}/user', ['\App\Http\Controllers\GameTopUpController', 'getUserOrders']);
-Router::put('/api/orders/{orderId}/status', ['\App\Http\Controllers\GameTopUpController', 'updateOrderStatus']);
+Router::post('/api/orders/{orderId}/status', ['\App\Http\Controllers\GameTopUpController', 'updateOrderStatus']);
 Router::post('/api/orders/{orderId}/notes', ['\App\Http\Controllers\GameTopUpController', 'addOrderNote']);
 Router::get('/api/orders/stats', ['\App\Http\Controllers\GameTopUpController', 'getOrderStats']);
 Router::post('/api/orders/search', ['\App\Http\Controllers\GameTopUpController', 'searchOrders']);
