@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Core\App;
 use App\Core\DB;
 use App\Support\Request;
+use App\Support\Settings;
 use PDO;
 
 class AdminController
@@ -121,5 +122,125 @@ class AdminController
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         App::json(['orders' => $rows, 'page' => $page, 'limit' => $limit]);
+    }
+
+    // Users page and APIs
+    public function usersPage(): void { $this->requireAdmin(); App::view('admin/users'); }
+    public function listUsers(): void
+    {
+        $this->requireAdmin();
+        $pdo = DB::conn();
+        $rows = $pdo->query('SELECT id, email, is_verified, is_admin, wallet_balance, created_at FROM users ORDER BY id DESC LIMIT 500')->fetchAll(PDO::FETCH_ASSOC);
+        App::json(['users' => $rows]);
+    }
+    public function updateUser(): void
+    {
+        $this->requireAdmin();
+        $data = Request::json();
+        $id = (int)($data['id'] ?? 0);
+        $is_admin = (int)($data['is_admin'] ?? 0);
+        $is_verified = (int)($data['is_verified'] ?? 0);
+        $wallet = (float)($data['wallet_balance'] ?? 0);
+        if ($id <= 0) return App::json(['error' => 'Invalid'], 422);
+        $pdo = DB::conn();
+        $stmt = $pdo->prepare('UPDATE users SET is_admin=?, is_verified=?, wallet_balance=?, updated_at = NOW() WHERE id = ?');
+        $stmt->execute([$is_admin, $is_verified, $wallet, $id]);
+        App::json(['ok' => true]);
+    }
+
+    // Settings page and APIs (maintenance, SEO, logo, mail, currency)
+    public function settingsPage(): void { $this->requireAdmin(); App::view('admin/settings'); }
+    public function getSettings(): void
+    {
+        $this->requireAdmin();
+        $keys = ['site_title','maintenance_mode','site_logo_url','mail_host','mail_port','mail_username','mail_password','mail_from_address','mail_from_name'];
+        $out = [];
+        foreach ($keys as $k) { $out[$k] = Settings::get($k, ''); }
+        App::json($out);
+    }
+    public function saveSettings(): void
+    {
+        $this->requireAdmin();
+        $data = Request::json();
+        foreach ($data as $k=>$v) { Settings::set($k, (string)$v); }
+        App::json(['ok'=>true]);
+    }
+
+    // Currency APIs
+    public function listCurrencies(): void
+    {
+        $this->requireAdmin();
+        $pdo = DB::conn();
+        $rows = $pdo->query('SELECT id, code, symbol, rate, is_default, enabled FROM currencies ORDER BY is_default DESC, code ASC')->fetchAll(PDO::FETCH_ASSOC);
+        App::json(['currencies'=>$rows]);
+    }
+    public function upsertCurrency(): void
+    {
+        $this->requireAdmin();
+        $d = Request::json();
+        $id = (int)($d['id'] ?? 0);
+        $code = substr(trim((string)($d['code'] ?? '')), 0, 3);
+        $symbol = substr(trim((string)($d['symbol'] ?? '')), 0, 8);
+        $rate = (float)($d['rate'] ?? 1);
+        $is_default = (int)($d['is_default'] ?? 0);
+        $enabled = (int)($d['enabled'] ?? 1);
+        if ($code === '' || $symbol === '' || $rate <= 0) return App::json(['error'=>'Invalid'],422);
+        $pdo = DB::conn();
+        if ($is_default === 1) { $pdo->exec('UPDATE currencies SET is_default = 0'); }
+        if ($id>0) {
+            $stmt = $pdo->prepare('UPDATE currencies SET code=?, symbol=?, rate=?, is_default=?, enabled=?, updated_at=NOW() WHERE id=?');
+            $stmt->execute([$code,$symbol,$rate,$is_default,$enabled,$id]);
+        } else {
+            $stmt = $pdo->prepare('INSERT INTO currencies (code,symbol,rate,is_default,enabled,created_at,updated_at) VALUES(?,?,?,?,?,NOW(),NOW())');
+            $stmt->execute([$code,$symbol,$rate,$is_default,$enabled]);
+        }
+        App::json(['ok'=>true]);
+    }
+
+    // Payment methods APIs
+    public function listPaymentMethods(): void
+    {
+        $this->requireAdmin();
+        $pdo = DB::conn();
+        $rows = $pdo->query('SELECT id, code, name, enabled, config FROM payment_methods ORDER BY id DESC')->fetchAll(PDO::FETCH_ASSOC);
+        App::json(['methods'=>$rows]);
+    }
+    public function upsertPaymentMethod(): void
+    {
+        $this->requireAdmin();
+        $d = Request::json();
+        $id = (int)($d['id'] ?? 0);
+        $code = substr(trim((string)($d['code'] ?? '')), 0, 64);
+        $name = substr(trim((string)($d['name'] ?? '')), 0, 191);
+        $enabled = (int)($d['enabled'] ?? 1);
+        $config = json_encode($d['config'] ?? new \stdClass());
+        $pdo = DB::conn();
+        if ($id>0) {
+            $stmt = $pdo->prepare('UPDATE payment_methods SET code=?, name=?, enabled=?, config=?, updated_at=NOW() WHERE id=?');
+            $stmt->execute([$code,$name,$enabled,$config,$id]);
+        } else {
+            $stmt = $pdo->prepare('INSERT INTO payment_methods (code,name,enabled,config,created_at,updated_at) VALUES(?,?,?,?,NOW(),NOW())');
+            $stmt->execute([$code,$name,$enabled,$config]);
+        }
+        App::json(['ok'=>true]);
+    }
+
+    // Logo upload
+    public function uploadLogo(): void
+    {
+        $this->requireAdmin();
+        if (!isset($_FILES['file'])) { http_response_code(400); echo 'No file'; return; }
+        $file = $_FILES['file'];
+        if ($file['error'] !== UPLOAD_ERR_OK) { http_response_code(400); echo 'Upload error'; return; }
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $ext = strtolower($ext);
+        if (!in_array($ext, ['png','jpg','jpeg','gif','svg'])) { http_response_code(400); echo 'Invalid type'; return; }
+        $dir = App::$basePath . '/public/uploads';
+        if (!is_dir($dir)) mkdir($dir, 0775, true);
+        $target = $dir . '/logo.' . $ext;
+        move_uploaded_file($file['tmp_name'], $target);
+        $url = '/uploads/' . basename($target);
+        Settings::set('site_logo_url', $url);
+        App::json(['url'=>$url]);
     }
 }

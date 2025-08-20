@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS pages_meta (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  path VARCHAR(191) NOT NULL UNIQUE,
+  meta_title VARCHAR(191) NULL,
+  meta_description VARCHAR(512) NULL,
+  meta_keywords VARCHAR(512) NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
