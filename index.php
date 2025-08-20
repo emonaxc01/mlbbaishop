@@ -73,65 +73,65 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Define routes
-Router::get('/', [App\Http\Controllers\PageController::class, 'home']);
+Router::get('/', ['\App\Http\Controllers\PageController', 'home']);
 
 // Auth
-Router::post('/api/auth/register', [App\Http\Controllers\AuthController::class, 'register']);
-Router::post('/api/auth/verify-otp', [App\Http\Controllers\AuthController::class, 'verifyOtp']);
-Router::post('/api/auth/login', [App\Http\Controllers\AuthController::class, 'login']);
-Router::post('/api/auth/logout', [App\Http\Controllers\AuthController::class, 'logout']);
-Router::get('/api/auth/me', [App\Http\Controllers\AuthController::class, 'me']);
+Router::post('/api/auth/register', ['\App\Http\Controllers\AuthController', 'register']);
+Router::post('/api/auth/verify-otp', ['\App\Http\Controllers\AuthController', 'verifyOtp']);
+Router::post('/api/auth/login', ['\App\Http\Controllers\AuthController', 'login']);
+Router::post('/api/auth/logout', ['\App\Http\Controllers\AuthController', 'logout']);
+Router::get('/api/auth/me', ['\App\Http\Controllers\AuthController', 'me']);
 
 // Orders
-Router::post('/api/orders', [App\Http\Controllers\OrderController::class, 'create']);
-Router::get('/api/orders', [App\Http\Controllers\OrderController::class, 'list']);
-Router::post('/api/checkout/orders', [App\Http\Controllers\CheckoutController::class, 'createOrder']);
+Router::post('/api/orders', ['\App\Http\Controllers\OrderController', 'create']);
+Router::get('/api/orders', ['\App\Http\Controllers\OrderController', 'list']);
+Router::post('/api/checkout/orders', ['\App\Http\Controllers\CheckoutController', 'createOrder']);
 
 // Admin pages
-Router::get('/admin', [App\Http\Controllers\AdminController::class, 'dashboard']);
-Router::get('/admin/products', [App\Http\Controllers\AdminController::class, 'productsPage']);
-Router::get('/admin/catalog', [App\Http\Controllers\AdminCatalogController::class, 'productsPage']);
-Router::get('/admin/catalog/product', [App\Http\Controllers\AdminCatalogController::class, 'productDetailPage']);
-Router::get('/admin/orders', [App\Http\Controllers\AdminController::class, 'ordersPage']);
-Router::get('/admin/users', [App\Http\Controllers\AdminController::class, 'usersPage']);
-Router::get('/admin/settings', [App\Http\Controllers\AdminController::class, 'settingsPage']);
+Router::get('/admin', ['\App\Http\Controllers\AdminController', 'dashboard']);
+Router::get('/admin/products', ['\App\Http\Controllers\AdminController', 'productsPage']);
+Router::get('/admin/catalog', ['\App\Http\Controllers\AdminCatalogController', 'productsPage']);
+Router::get('/admin/catalog/product', ['\App\Http\Controllers\AdminCatalogController', 'productDetailPage']);
+Router::get('/admin/orders', ['\App\Http\Controllers\AdminController', 'ordersPage']);
+Router::get('/admin/users', ['\App\Http\Controllers\AdminController', 'usersPage']);
+Router::get('/admin/settings', ['\App\Http\Controllers\AdminController', 'settingsPage']);
 
 // Admin APIs
-Router::get('/api/admin/products', [App\Http\Controllers\AdminController::class, 'listProducts']);
-Router::post('/api/admin/products', [App\Http\Controllers\AdminController::class, 'upsertProduct']);
-Router::get('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'listPackages']);
-Router::post('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'upsertPackage']);
-Router::get('/api/admin/orders', [App\Http\Controllers\AdminController::class, 'listAllOrders']);
-Router::post('/api/admin/orders/note', [App\Http\Controllers\AdminController::class, 'addOrderNote']);
-Router::get('/api/admin/export/users', [App\Http\Controllers\AdminController::class, 'exportUsers']);
-Router::get('/api/admin/export/orders', [App\Http\Controllers\AdminController::class, 'exportOrders']);
-Router::post('/api/admin/import/users', [App\Http\Controllers\AdminController::class, 'importUsers']);
-Router::post('/api/admin/import/orders', [App\Http\Controllers\AdminController::class, 'importOrders']);
-Router::get('/api/catalog', [App\Http\Controllers\CatalogController::class, 'list']);
-Router::get('/api/catalog/detail', [App\Http\Controllers\CatalogController::class, 'detail']);
+Router::get('/api/admin/products', ['\App\Http\Controllers\AdminController', 'listProducts']);
+Router::post('/api/admin/products', ['\App\Http\Controllers\AdminController', 'upsertProduct']);
+Router::get('/api/admin/packages', ['\App\Http\Controllers\AdminController', 'listPackages']);
+Router::post('/api/admin/packages', ['\App\Http\Controllers\AdminController', 'upsertPackage']);
+Router::get('/api/admin/orders', ['\App\Http\Controllers\AdminController', 'listAllOrders']);
+Router::post('/api/admin/orders/note', ['\App\Http\Controllers\AdminController', 'addOrderNote']);
+Router::get('/api/admin/export/users', ['\App\Http\Controllers\AdminController', 'exportUsers']);
+Router::get('/api/admin/export/orders', ['\App\Http\Controllers\AdminController', 'exportOrders']);
+Router::post('/api/admin/import/users', ['\App\Http\Controllers\AdminController', 'importUsers']);
+Router::post('/api/admin/import/orders', ['\App\Http\Controllers\AdminController', 'importOrders']);
+Router::get('/api/catalog', ['\App\Http\Controllers\CatalogController', 'list']);
+Router::get('/api/catalog/detail', ['\App\Http\Controllers\CatalogController', 'detail']);
 
 // Admin catalog APIs
-Router::get('/api/admin/catalog/products', [App\Http\Controllers\AdminCatalogController::class, 'listProducts']);
-Router::post('/api/admin/catalog/product', [App\Http\Controllers\AdminCatalogController::class, 'saveProduct']);
-Router::get('/api/admin/catalog/product/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteProduct']);
-Router::get('/api/admin/catalog/variations', [App\Http\Controllers\AdminCatalogController::class, 'listVariations']);
-Router::post('/api/admin/catalog/variation', [App\Http\Controllers\AdminCatalogController::class, 'saveVariation']);
-Router::get('/api/admin/catalog/variation/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteVariation']);
-Router::get('/api/admin/catalog/product/meta', [App\Http\Controllers\AdminCatalogController::class, 'listProductMeta']);
-Router::post('/api/admin/catalog/product/meta', [App\Http\Controllers\AdminCatalogController::class, 'saveProductMeta']);
-Router::get('/api/admin/catalog/product/meta/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteProductMeta']);
-Router::get('/api/admin/catalog/variation/meta', [App\Http\Controllers\AdminCatalogController::class, 'listVariationMeta']);
-Router::post('/api/admin/catalog/variation/meta', [App\Http\Controllers\AdminCatalogController::class, 'saveVariationMeta']);
-Router::get('/api/admin/catalog/variation/meta/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteVariationMeta']);
-Router::get('/api/admin/users', [App\Http\Controllers\AdminController::class, 'listUsers']);
-Router::post('/api/admin/users', [App\Http\Controllers\AdminController::class, 'updateUser']);
-Router::get('/api/admin/settings', [App\Http\Controllers\AdminController::class, 'getSettings']);
-Router::post('/api/admin/settings', [App\Http\Controllers\AdminController::class, 'saveSettings']);
-Router::get('/api/admin/currencies', [App\Http\Controllers\AdminController::class, 'listCurrencies']);
-Router::post('/api/admin/currencies', [App\Http\Controllers\AdminController::class, 'upsertCurrency']);
-Router::get('/api/admin/payments', [App\Http\Controllers\AdminController::class, 'listPaymentMethods']);
-Router::post('/api/admin/payments', [App\Http\Controllers\AdminController::class, 'upsertPaymentMethod']);
-Router::post('/api/admin/upload-logo', [App\Http\Controllers\AdminController::class, 'uploadLogo']);
+Router::get('/api/admin/catalog/products', ['\App\Http\Controllers\AdminCatalogController', 'listProducts']);
+Router::post('/api/admin/catalog/product', ['\App\Http\Controllers\AdminCatalogController', 'saveProduct']);
+Router::get('/api/admin/catalog/product/delete', ['\App\Http\Controllers\AdminCatalogController', 'deleteProduct']);
+Router::get('/api/admin/catalog/variations', ['\App\Http\Controllers\AdminCatalogController', 'listVariations']);
+Router::post('/api/admin/catalog/variation', ['\App\Http\Controllers\AdminCatalogController', 'saveVariation']);
+Router::get('/api/admin/catalog/variation/delete', ['\App\Http\Controllers\AdminCatalogController', 'deleteVariation']);
+Router::get('/api/admin/catalog/product/meta', ['\App\Http\Controllers\AdminCatalogController', 'listProductMeta']);
+Router::post('/api/admin/catalog/product/meta', ['\App\Http\Controllers\AdminCatalogController', 'saveProductMeta']);
+Router::get('/api/admin/catalog/product/meta/delete', ['\App\Http\Controllers\AdminCatalogController', 'deleteProductMeta']);
+Router::get('/api/admin/catalog/variation/meta', ['\App\Http\Controllers\AdminCatalogController', 'listVariationMeta']);
+Router::post('/api/admin/catalog/variation/meta', ['\App\Http\Controllers\AdminCatalogController', 'saveVariationMeta']);
+Router::get('/api/admin/catalog/variation/meta/delete', ['\App\Http\Controllers\AdminCatalogController', 'deleteVariationMeta']);
+Router::get('/api/admin/users', ['\App\Http\Controllers\AdminController', 'listUsers']);
+Router::post('/api/admin/users', ['\App\Http\Controllers\AdminController', 'updateUser']);
+Router::get('/api/admin/settings', ['\App\Http\Controllers\AdminController', 'getSettings']);
+Router::post('/api/admin/settings', ['\App\Http\Controllers\AdminController', 'saveSettings']);
+Router::get('/api/admin/currencies', ['\App\Http\Controllers\AdminController', 'listCurrencies']);
+Router::post('/api/admin/currencies', ['\App\Http\Controllers\AdminController', 'upsertCurrency']);
+Router::get('/api/admin/payments', ['\App\Http\Controllers\AdminController', 'listPaymentMethods']);
+Router::post('/api/admin/payments', ['\App\Http\Controllers\AdminController', 'upsertPaymentMethod']);
+Router::post('/api/admin/upload-logo', ['\App\Http\Controllers\AdminController', 'uploadLogo']);
 
 // Ping
 Router::get('/api/health', function() {
@@ -139,12 +139,12 @@ Router::get('/api/health', function() {
 });
 
 // Installer routes (aliases /install and /insall)
-Router::get('/install', [App\Http\Controllers\InstallerController::class, 'form']);
-Router::get('/insall', [App\Http\Controllers\InstallerController::class, 'form']);
-Router::get('/install/check', [App\Http\Controllers\InstallerController::class, 'check']);
-Router::post('/install/save-env', [App\Http\Controllers\InstallerController::class, 'saveEnv']);
-Router::get('/install/migrate', [App\Http\Controllers\InstallerController::class, 'runMigrations']);
-Router::post('/install/create-admin', [App\Http\Controllers\InstallerController::class, 'createAdmin']);
+Router::get('/install', ['\App\Http\Controllers\InstallerController', 'form']);
+Router::get('/insall', ['\App\Http\Controllers\InstallerController', 'form']);
+Router::get('/install/check', ['\App\Http\Controllers\InstallerController', 'check']);
+Router::post('/install/save-env', ['\App\Http\Controllers\InstallerController', 'saveEnv']);
+Router::get('/install/migrate', ['\App\Http\Controllers\InstallerController', 'runMigrations']);
+Router::post('/install/create-admin', ['\App\Http\Controllers\InstallerController', 'createAdmin']);
 
 // Maintenance mode guard for public site (skip for installer)
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
