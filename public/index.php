@@ -26,6 +26,18 @@ Router::get('/api/auth/me', [App\Http\Controllers\AuthController::class, 'me']);
 Router::post('/api/orders', [App\Http\Controllers\OrderController::class, 'create']);
 Router::get('/api/orders', [App\Http\Controllers\OrderController::class, 'list']);
 
+// Admin pages
+Router::get('/admin', [App\Http\Controllers\AdminController::class, 'dashboard']);
+Router::get('/admin/products', [App\Http\Controllers\AdminController::class, 'productsPage']);
+Router::get('/admin/orders', [App\Http\Controllers\AdminController::class, 'ordersPage']);
+
+// Admin APIs
+Router::get('/api/admin/products', [App\Http\Controllers\AdminController::class, 'listProducts']);
+Router::post('/api/admin/products', [App\Http\Controllers\AdminController::class, 'upsertProduct']);
+Router::get('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'listPackages']);
+Router::post('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'upsertPackage']);
+Router::get('/api/admin/orders', [App\Http\Controllers\AdminController::class, 'listAllOrders']);
+
 // Ping
 Router::get('/api/health', function() {
     App::json(['status' => 'ok']);
