@@ -839,6 +839,62 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-premium p-5 text-white flex items-center justify-between">
+                <h3 class="text-xl font-bold">Account</h3>
+                <button id="closeAuthModal" class="text-white/80 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="flex border-b mb-4">
+                    <button class="login-tab active px-4 py-2 rounded-t-lg" data-auth-tab="login">Login</button>
+                    <button class="login-tab px-4 py-2 rounded-t-lg" data-auth-tab="register">Register</button>
+                </div>
+                <div id="loginPanel">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" for="authLoginEmail">Email</label>
+                        <input id="authLoginEmail" type="email" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="you@example.com">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-1" for="authLoginPassword">Password</label>
+                        <input id="authLoginPassword" type="password" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="••••••••">
+                    </div>
+                    <button id="authLoginBtn" class="w-full bg-gradient-to-r from-primary to-premium text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition">Login</button>
+                </div>
+                <div id="registerPanel" class="hidden">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" for="authRegisterEmail">Email</label>
+                        <input id="authRegisterEmail" type="email" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="you@example.com">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-1" for="authRegisterPassword">Password</label>
+                        <input id="authRegisterPassword" type="password" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="minimum 8 characters">
+                    </div>
+                    <button id="authRegisterBtn" class="w-full bg-gradient-to-r from-primary to-premium text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Verify Modal -->
+    <div id="otpModal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-premium p-5 text-white flex items-center justify-between">
+                <h3 class="text-xl font-bold">Verify Email</h3>
+                <button id="closeOtpModal" class="text-white/80 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Enter the 6-digit code sent to <span id="otpEmail" class="font-medium"></span>.</p>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-1" for="otpCode">OTP Code</label>
+                    <input id="otpCode" type="text" maxlength="6" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="123456">
+                </div>
+                <button id="verifyOtpBtn" class="w-full bg-gradient-to-r from-primary to-premium text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition">Verify</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Exchange rates (base currency: BDT)
         const exchangeRates = {
@@ -849,58 +905,8 @@
             PKR: { symbol: '₨', rate: 2.52 }
         };
 
-        // Game packages data (in base currency BDT)
-        const packages = {
-            freefire: [
-                { code: 'd25', label: '25 Diamonds', diamonds: 25, price: 50 },
-                { code: 'd50', label: '50 Diamonds', diamonds: 50, price: 100 },
-                { code: 'd115', label: '115 Diamonds', diamonds: 115, price: 220 },
-                { code: 'd230', label: '230 Diamonds', diamonds: 230, price: 420 },
-                { code: 'd610', label: '610 Diamonds', diamonds: 610, price: 1000 }
-            ],
-            mlbb: [
-                { code: 'd50', label: '50 Diamonds', diamonds: 50, price: 120 },
-                { code: 'd100', label: '100 Diamonds', diamonds: 100, price: 240 },
-                { code: 'd200', label: '200 Diamonds', diamonds: 200, price: 460 },
-                { code: 'd500', label: '500 Diamonds', diamonds: 500, price: 1100 }
-            ],
-            pubg: [
-                { code: 'd100', label: '100 UC', diamonds: 100, price: 110 },
-                { code: 'd250', label: '250 UC', diamonds: 250, price: 270 },
-                { code: 'd500', label: '500 UC', diamonds: 500, price: 530 },
-                { code: 'd1000', label: '1000 UC', diamonds: 1000, price: 1050 }
-            ],
-            cod: [
-                { code: 'd100', label: '100 CP', diamonds: 100, price: 120 },
-                { code: 'd200', label: '200 CP', diamonds: 200, price: 230 },
-                { code: 'd500', label: '500 CP', diamonds: 500, price: 550 },
-                { code: 'd1000', label: '1000 CP', diamonds: 1000, price: 1050 }
-            ],
-            genshin: [
-                { code: 'd60', label: '60 Crystals', diamonds: 60, price: 100 },
-                { code: 'd300', label: '300 Crystals', diamonds: 300, price: 450 },
-                { code: 'd980', label: '980 Crystals', diamonds: 980, price: 1400 },
-                { code: 'd1980', label: '1980 Crystals', diamonds: 1980, price: 2700 }
-            ],
-            valorant: [
-                { code: 'd125', label: '125 Points', diamonds: 125, price: 150 },
-                { code: 'd400', label: '400 Points', diamonds: 400, price: 450 },
-                { code: 'd1000', label: '1000 Points', diamonds: 1000, price: 1100 },
-                { code: 'd2050', label: '2050 Points', diamonds: 2050, price: 2200 }
-            ],
-            lol: [
-                { code: 'd125', label: '125 RP', diamonds: 125, price: 130 },
-                { code: 'd420', label: '420 RP', diamonds: 420, price: 430 },
-                { code: 'd940', label: '940 RP', diamonds: 940, price: 950 },
-                { code: 'd1650', label: '1650 RP', diamonds: 1650, price: 1700 }
-            ],
-            fortnite: [
-                { code: 'd100', label: '100 V-Bucks', diamonds: 100, price: 110 },
-                { code: 'd500', label: '500 V-Bucks', diamonds: 500, price: 520 },
-                { code: 'd1000', label: '1000 V-Bucks', diamonds: 1000, price: 1020 },
-                { code: 'd13500', label: '13500 V-Bucks', diamonds: 13500, price: 13500 }
-            ]
-        };
+        // DB-driven packages loaded from catalog API
+        const packages = {};
 
         // State management
         let state = {
@@ -948,6 +954,65 @@
         const mobileDropdown = document.getElementById('mobileDropdown');
         const mobileLogoutButton = document.getElementById('mobileLogoutButton');
         const bottomNavItems = document.querySelectorAll('.mobile-bottom-nav-item');
+        // Auth elements
+        const authModal = document.getElementById('authModal');
+        const closeAuthModal = document.getElementById('closeAuthModal');
+        const loginPanel = document.getElementById('loginPanel');
+        const registerPanel = document.getElementById('registerPanel');
+        const authLoginBtn = document.getElementById('authLoginBtn');
+        const authRegisterBtn = document.getElementById('authRegisterBtn');
+        const authLoginEmail = document.getElementById('authLoginEmail');
+        const authLoginPassword = document.getElementById('authLoginPassword');
+        const authRegisterEmail = document.getElementById('authRegisterEmail');
+        const authRegisterPassword = document.getElementById('authRegisterPassword');
+        const otpModal = document.getElementById('otpModal');
+        const closeOtpModal = document.getElementById('closeOtpModal');
+        const otpEmail = document.getElementById('otpEmail');
+        const otpCode = document.getElementById('otpCode');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        // Simple API helper
+        async function apiRequest(path, method = 'GET', body = null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(path, opts);
+            let data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok) {
+                const message = (data && (data.error || data.message)) || `Request failed (${res.status})`;
+                throw new Error(message);
+            }
+            return data;
+        }
+
+        function openAuthModal(defaultTab = 'login') {
+            if (defaultTab === 'register') {
+                loginPanel.classList.add('hidden');
+                registerPanel.classList.remove('hidden');
+                document.querySelectorAll('[data-auth-tab]').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-auth-tab="register"]').classList.add('active');
+            } else {
+                registerPanel.classList.add('hidden');
+                loginPanel.classList.remove('hidden');
+                document.querySelectorAll('[data-auth-tab]').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-auth-tab="login"]').classList.add('active');
+            }
+            authModal.classList.remove('hidden');
+        }
+
+        function closeAuth() { authModal.classList.add('hidden'); }
+        function openOtp(email) { otpEmail.textContent = email; otpModal.classList.remove('hidden'); }
+        function closeOtp() { otpModal.classList.add('hidden'); }
+
+        async function checkAuth() {
+            try {
+                const me = await apiRequest('/api/auth/me');
+                state.userLoggedIn = !!me.authenticated;
+                updateUserMenu();
+            } catch (e) {
+                state.userLoggedIn = false;
+                updateUserMenu();
+            }
+        }
 
         // Banner slider
         const slider = document.getElementById('slider');
@@ -1138,12 +1203,22 @@
         }
 
         // Render packages for selected game
-        function renderPackages() {
+        async function renderPackages() {
             if (!state.selectedGame) return;
             
             packagesContainer.innerHTML = '';
-            
-            const gamePackages = packages[state.selectedGame] || [];
+            // map selected game to a product slug
+            const gameToSlug = { freefire: 'free-fire-diamonds', mlbb: 'mlbb-diamonds', pubg: 'pubg-uc', cod: 'call-of-duty', genshin: 'genshin-crystals', valorant: 'valorant-points', lol: 'league-of-legends', fortnite: 'fortnite' };
+            const slug = gameToSlug[state.selectedGame] || state.selectedGame;
+            let gamePackages = [];
+            try {
+                const res = await fetch(`/api/catalog/detail?slug=${encodeURIComponent(slug)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    gamePackages = (data.variations||[]).map(v => ({ code: v.id, label: v.name, diamonds: 0, price: v.price }));
+                    state.productId = (data.product && data.product.id) ? String(data.product.id) : state.productId;
+                }
+            } catch (e) {}
             
             gamePackages.forEach(pkg => {
                 const convertedPrice = convertPrice(pkg.price);
@@ -1305,6 +1380,10 @@
             // User menu toggle
             userMenuButton.addEventListener('click', (e) => {
                 e.stopPropagation();
+                if (!state.userLoggedIn) {
+                    openAuthModal('login');
+                    return;
+                }
                 userDropdown.classList.toggle('show');
             });
             
@@ -1326,7 +1405,8 @@
             });
             
             // Logout button
-            logoutButton.addEventListener('click', () => {
+            logoutButton.addEventListener('click', async () => {
+                try { await apiRequest('/api/auth/logout', 'POST'); } catch (e) {}
                 state.userLoggedIn = false;
                 updateUserMenu();
                 showToast('Logged out successfully');
@@ -1334,12 +1414,81 @@
             });
             
             // Mobile logout button
-            mobileLogoutButton.addEventListener('click', () => {
+            mobileLogoutButton.addEventListener('click', async () => {
+                try { await apiRequest('/api/auth/logout', 'POST'); } catch (e) {}
                 state.userLoggedIn = false;
                 updateUserMenu();
                 mobileDropdown.classList.remove('show');
                 showToast('Logged out successfully');
                 saveStateToLocalStorage();
+            });
+
+            // Auth modal toggles
+            document.querySelectorAll('[data-auth-tab]').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const t = tab.getAttribute('data-auth-tab');
+                    if (t === 'login') {
+                        registerPanel.classList.add('hidden');
+                        loginPanel.classList.remove('hidden');
+                    } else {
+                        loginPanel.classList.add('hidden');
+                        registerPanel.classList.remove('hidden');
+                    }
+                    document.querySelectorAll('[data-auth-tab]').forEach(t2 => t2.classList.remove('active'));
+                    tab.classList.add('active');
+                });
+            });
+            closeAuthModal.addEventListener('click', closeAuth);
+            closeOtpModal.addEventListener('click', closeOtp);
+            
+            // Login
+            authLoginBtn.addEventListener('click', async () => {
+                const email = authLoginEmail.value.trim();
+                const password = authLoginPassword.value;
+                if (!email || !password) { showToast('Enter email and password'); return; }
+                try {
+                    await apiRequest('/api/auth/login', 'POST', { email, password });
+                    state.userLoggedIn = true;
+                    updateUserMenu();
+                    closeAuth();
+                    showToast('Logged in');
+                    saveStateToLocalStorage();
+                    updateCheckoutButton();
+                } catch (e) {
+                    showToast(e.message || 'Login failed');
+                }
+            });
+
+            // Register -> OTP
+            authRegisterBtn.addEventListener('click', async () => {
+                const email = authRegisterEmail.value.trim();
+                const password = authRegisterPassword.value;
+                if (!email || password.length < 8) { showToast('Use valid email and 8+ char password'); return; }
+                try {
+                    await apiRequest('/api/auth/register', 'POST', { email, password });
+                    openOtp(email);
+                    showToast('OTP sent to email');
+                } catch (e) {
+                    showToast(e.message || 'Register failed');
+                }
+            });
+
+            verifyOtpBtn.addEventListener('click', async () => {
+                const email = otpEmail.textContent.trim();
+                const code = otpCode.value.trim();
+                if (!/^[0-9]{6}$/.test(code)) { showToast('Enter 6-digit code'); return; }
+                try {
+                    await apiRequest('/api/auth/verify-otp', 'POST', { email, code });
+                    state.userLoggedIn = true;
+                    updateUserMenu();
+                    closeOtp();
+                    closeAuth();
+                    showToast('Email verified');
+                    saveStateToLocalStorage();
+                    updateCheckoutButton();
+                } catch (e) {
+                    showToast(e.message || 'Verification failed');
+                }
             });
             
             // Bottom navigation items
@@ -1584,26 +1733,23 @@
                 orderModal.classList.add('hidden');
             });
             
-            document.getElementById('confirmOrder').addEventListener('click', () => {
-                // Simulate API call to create order
+            document.getElementById('confirmOrder').addEventListener('click', async () => {
+                if (!state.userLoggedIn) { showToast('Login required'); return; }
                 showToast('Processing payment...');
-                
-                // Simulate payment processing
-                setTimeout(() => {
-                    orderModal.classList.add('hidden');
-                    
-                    // Generate random order ID
-                    const randomId = 'ORD-' + Math.floor(10000 + Math.random() * 90000);
-                    orderId.textContent = randomId;
-                    successPlayerId.textContent = state.playerId;
-                    
-                    // Update success amount
+                try {
                     const convertedPrice = convertPrice(state.selectedPackage.price);
+                    const res = await apiRequest('/api/checkout/orders', 'POST', {
+                        items: [{ productId: Number(state.productId), variationId: Number(state.variationId||0), quantity: 1 }],
+                        paymentMethod: state.paymentMethod || 'testpay'
+                    });
+                    orderModal.classList.add('hidden');
+                    orderId.textContent = 'ORD-' + res.orderId;
+                    successPlayerId.textContent = state.playerId;
                     successAmount.textContent = `${formatCurrency(convertedPrice)} ${state.currentCurrency}`;
-                    
-                    // Show success modal
                     successModal.classList.remove('hidden');
-                }, 2000);
+                } catch (e) {
+                    showToast(e.message || 'Payment failed');
+                }
             });
             
             // Success modal button
@@ -1668,6 +1814,9 @@
             
             // Render packages for default selected game
             renderPackages();
+            
+            // Check session
+            checkAuth();
             
             // Simulate API call after 2 seconds
             setTimeout(() => {
