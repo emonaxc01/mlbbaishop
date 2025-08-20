@@ -78,6 +78,14 @@ Router::get('/api/health', function() {
     App::json(['status' => 'ok']);
 });
 
+// Installer routes (aliases /install and /insall)
+Router::get('/install', [App\Http\Controllers\InstallerController::class, 'form']);
+Router::get('/insall', [App\Http\Controllers\InstallerController::class, 'form']);
+Router::get('/install/check', [App\Http\Controllers\InstallerController::class, 'check']);
+Router::post('/install/save-env', [App\Http\Controllers\InstallerController::class, 'saveEnv']);
+Router::get('/install/migrate', [App\Http\Controllers\InstallerController::class, 'runMigrations']);
+Router::post('/install/create-admin', [App\Http\Controllers\InstallerController::class, 'createAdmin']);
+
 // Maintenance mode guard for public site
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
     $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
