@@ -76,3 +76,36 @@ Git workflow (public -> main directory):
 - Branching:
   - Feature branches (e.g., `feature/admin-panel`) merged into `main`
   - Deploy from `main`
+
+Nginx config (generic):
+```
+server {
+    listen 80;
+    server_name yourdomain.com;
+    root /var/www/site;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock; # adjust PHP version/socket
+    }
+
+    location ~ /\.(ht|git) {
+        deny all;
+    }
+}
+```
+
+HestiaCP notes (Nginx + PHP-FPM):
+- Set web root to the project directory (root, not public)
+- Add the above Nginx rules to the domain template’s additional Nginx directives
+- Ensure PHP-FPM version matches your server; adjust fastcgi_pass accordingly
+
+Hostinger VPS notes:
+- Use HPanel or SSH to set document root to repository root
+- Enable PHP extensions: pdo_mysql, mbstring, curl, openssl
+- If using Nginx, add the same server block rules and reload Nginx
