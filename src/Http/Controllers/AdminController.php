@@ -124,6 +124,80 @@ class AdminController
         App::json(['orders' => $rows, 'page' => $page, 'limit' => $limit]);
     }
 
+    // Order notes
+    public function addOrderNote(): void
+    {
+        $this->requireAdmin();
+        $d = Request::json();
+        $orderId = (int)($d['order_id'] ?? 0);
+        $note = trim((string)($d['note'] ?? ''));
+        $emailUser = (int)($d['email_user'] ?? 0) === 1;
+        if ($orderId<=0 || $note==='') return App::json(['error'=>'Invalid'],422);
+        $pdo = DB::conn();
+        $pdo->prepare('INSERT INTO order_notes (order_id, note, emailed, created_at) VALUES (?,?,?,NOW())')->execute([$orderId, $note, $emailUser?1:0]);
+        if ($emailUser) {
+            $stmt = $pdo->prepare('SELECT u.email FROM orders o JOIN users u ON u.id = o.user_id WHERE o.id = ?');
+            $stmt->execute([$orderId]);
+            $to = (string)$stmt->fetchColumn();
+            if ($to) { \App\Support\Mailer::send($to, 'Order Update #'.$orderId, '<p>'.$note.'</p>'); }
+        }
+        App::json(['ok'=>true]);
+    }
+
+    // CSV export/import (basic)
+    public function exportUsers(): void
+    {
+        $this->requireAdmin();
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename=users.csv');
+        $out = fopen('php://output','w');
+        fputcsv($out, ['id','email','is_verified','is_admin','wallet_balance','created_at']);
+        $rows = DB::conn()->query('SELECT id,email,is_verified,is_admin,wallet_balance,created_at FROM users ORDER BY id ASC');
+        foreach ($rows as $r) { fputcsv($out, $r); }
+        fclose($out);
+    }
+
+    public function exportOrders(): void
+    {
+        $this->requireAdmin();
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename=orders.csv');
+        $out = fopen('php://output','w');
+        fputcsv($out, ['id','user_email','payment_status','total','currency','payment_method','status','created_at']);
+        $stmt = DB::conn()->query('SELECT o.id, u.email, o.payment_status, o.total, o.currency, o.payment_method, o.status, o.created_at FROM orders o JOIN users u ON u.id=o.user_id ORDER BY o.id ASC');
+        foreach ($stmt as $r) { fputcsv($out, $r); }
+        fclose($out);
+    }
+
+    public function importUsers(): void
+    {
+        $this->requireAdmin();
+        if (!isset($_FILES['file'])) { http_response_code(400); echo 'No file'; return; }
+        $h = fopen($_FILES['file']['tmp_name'],'r');
+        if (!$h) { http_response_code(400); echo 'Invalid file'; return; }
+        $pdo = DB::conn();
+        $header = fgetcsv($h);
+        while(($row = fgetcsv($h)) !== false){
+            $data = array_combine($header, $row);
+            if (!filter_var($data['email'] ?? '', FILTER_VALIDATE_EMAIL)) continue;
+            $stmt = $pdo->prepare('INSERT INTO users (email, password, is_verified, is_admin, wallet_balance, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_verified=VALUES(is_verified), is_admin=VALUES(is_admin), wallet_balance=VALUES(wallet_balance), updated_at=NOW()');
+            $stmt->execute([$data['email'], password_hash('changeme', PASSWORD_DEFAULT), (int)($data['is_verified']??0), (int)($data['is_admin']??0), (float)($data['wallet_balance']??0)]);
+        }
+        fclose($h);
+        App::json(['ok'=>true]);
+    }
+
+    public function importOrders(): void
+    {
+        $this->requireAdmin();
+        if (!isset($_FILES['file'])) { http_response_code(400); echo 'No file'; return; }
+        $h = fopen($_FILES['file']['tmp_name'],'r');
+        if (!$h) { http_response_code(400); echo 'Invalid file'; return; }
+        // Basic placeholder: real import mapping would be more complex
+        fclose($h);
+        App::json(['ok'=>true]);
+    }
+
     // Users page and APIs
     public function usersPage(): void { $this->requireAdmin(); App::view('admin/users'); }
     public function listUsers(): void

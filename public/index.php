@@ -42,6 +42,11 @@ Router::post('/api/admin/products', [App\Http\Controllers\AdminController::class
 Router::get('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'listPackages']);
 Router::post('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'upsertPackage']);
 Router::get('/api/admin/orders', [App\Http\Controllers\AdminController::class, 'listAllOrders']);
+Router::post('/api/admin/orders/note', [App\Http\Controllers\AdminController::class, 'addOrderNote']);
+Router::get('/api/admin/export/users', [App\Http\Controllers\AdminController::class, 'exportUsers']);
+Router::get('/api/admin/export/orders', [App\Http\Controllers\AdminController::class, 'exportOrders']);
+Router::post('/api/admin/import/users', [App\Http\Controllers\AdminController::class, 'importUsers']);
+Router::post('/api/admin/import/orders', [App\Http\Controllers\AdminController::class, 'importOrders']);
 Router::get('/api/catalog', [App\Http\Controllers\CatalogController::class, 'list']);
 Router::get('/api/catalog/detail', [App\Http\Controllers\CatalogController::class, 'detail']);
 

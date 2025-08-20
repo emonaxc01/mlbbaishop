@@ -18,6 +18,10 @@
             </div>
         </div>
         <div class="bg-white border rounded-lg p-4 overflow-x-auto">
+            <div class="flex items-center gap-2 mb-3">
+                <a href="/api/admin/export/users" class="px-3 py-2 bg-gray-800 text-white rounded">Export CSV</a>
+                <label class="px-3 py-2 border rounded cursor-pointer">Import CSV<input id="importUsers" type="file" class="hidden"></label>
+            </div>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left border-b">
@@ -59,6 +63,14 @@
         }
     });
     loadUsers();
+    document.getElementById('importUsers').addEventListener('change', async (e)=>{
+        if(!e.target.files[0]) return;
+        const fd = new FormData(); fd.append('file', e.target.files[0]);
+        const res = await fetch('/api/admin/import/users',{method:'POST', body: fd});
+        alert(res.ok ? 'Imported' : 'Failed');
+        if(res.ok) loadUsers();
+        e.target.value='';
+    });
     </script>
 </body>
 </html>

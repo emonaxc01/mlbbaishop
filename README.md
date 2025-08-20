@@ -47,3 +47,20 @@ Admin (requires `is_admin=1` user):
 
 Installer:
 - Basic page at `/installer` (CLI steps recommended now); can be expanded to run migrations and write env.
+
+Deploy to VPS (Ubuntu/Apache example):
+1) Install system deps
+   - sudo apt update && sudo apt install -y apache2 libapache2-mod-php php php-mysql php-xml php-mbstring php-curl unzip git
+2) Clone project into /var/www/your-site and set permissions
+   - sudo git clone <repo> /var/www/your-site
+   - cd /var/www/your-site && composer install
+3) Configure env
+   - cp .env.example .env and edit DB_ and MAIL_ values
+   - php bin/migrate.php
+4) Apache vhost
+   - sudo nano /etc/apache2/sites-available/your-site.conf
+   - Set DocumentRoot to /var/www/your-site/public and add AllowOverride All
+   - sudo a2ensite your-site && sudo a2enmod rewrite && sudo systemctl reload apache2
+5) DNS: point your domain to server IP
+6) SSL (optional):
+   - sudo apt install -y certbot python3-certbot-apache && sudo certbot --apache -d yourdomain.com
