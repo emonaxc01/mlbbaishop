@@ -17,15 +17,21 @@ set_error_handler(function($severity, $message, $file, $line) {
 // Set exception handler
 set_exception_handler(function($exception) {
     $debug = $_ENV['APP_DEBUG'] ?? 'false';
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
     
-    if ($debug === 'true') {
-        echo '<h1>Error: ' . $exception->getMessage() . '</h1>';
-        echo '<h2>File: ' . $exception->getFile() . ':' . $exception->getLine() . '</h2>';
-        echo '<pre>' . $exception->getTraceAsString() . '</pre>';
+    // For installer routes, always show detailed errors
+    if (str_starts_with($path, '/install') || str_starts_with($path, '/insall')) {
+        echo '<!doctype html><html><head><meta charset="utf-8"><title>Installer Error</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font-family:sans-serif;background:#f9fafb;color:#111827;padding:20px} .error{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:32px;box-shadow:0 10px 25px rgba(0,0,0,.05);max-width:800px;margin:0 auto} .error h1{color:#dc2626;margin:0 0 16px} .error pre{background:#f3f4f6;padding:16px;border-radius:8px;overflow-x:auto;font-size:14px}</style></head><body><div class="error"><h1>Installer Error</h1><p><strong>Error:</strong> ' . htmlspecialchars($exception->getMessage()) . '</p><p><strong>File:</strong> ' . htmlspecialchars($exception->getFile()) . ':' . $exception->getLine() . '</p><pre>' . htmlspecialchars($exception->getTraceAsString()) . '</pre><p><a href="/debug.php">View Debug Information</a></p></div></body></html>';
     } else {
-        http_response_code(500);
-        echo '<h1>Internal Server Error</h1>';
-        echo '<p>Something went wrong. Please try again later.</p>';
+        if ($debug === 'true') {
+            echo '<h1>Error: ' . $exception->getMessage() . '</h1>';
+            echo '<h2>File: ' . $exception->getFile() . ':' . $exception->getLine() . '</h2>';
+            echo '<pre>' . $exception->getTraceAsString() . '</pre>';
+        } else {
+            http_response_code(500);
+            echo '<h1>Internal Server Error</h1>';
+            echo '<p>Something went wrong. Please try again later.</p>';
+        }
     }
     exit;
 });
@@ -117,10 +123,12 @@ Router::post('/install/save-env', [App\Http\Controllers\InstallerController::cla
 Router::get('/install/migrate', [App\Http\Controllers\InstallerController::class, 'runMigrations']);
 Router::post('/install/create-admin', [App\Http\Controllers\InstallerController::class, 'createAdmin']);
 
-// Maintenance mode guard for public site
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
-    $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-    $isAdminPath = str_starts_with($path, '/admin') || str_starts_with($path, '/api/admin');
+// Maintenance mode guard for public site (skip for installer)
+$path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+$isInstallerPath = str_starts_with($path, '/install') || str_starts_with($path, '/insall');
+$isAdminPath = str_starts_with($path, '/admin') || str_starts_with($path, '/api/admin');
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && !$isInstallerPath) {
     if (!$isAdminPath) {
         try {
             $maintenance = App\Support\Settings::get('maintenance_mode', 'off');
