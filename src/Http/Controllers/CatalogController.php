@@ -20,7 +20,7 @@ class CatalogController
         $stmt = $pdo->prepare("SELECT id, name, slug, sku, image_url, price, stock FROM products WHERE $where ORDER BY id DESC LIMIT $limit OFFSET $offset");
         $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        App::json(['page'=>$page,'limit'=>$limit,'items'=>$rows]);
+        App::json(['page'=>$page,'limit'=>$limit,'products'=>$rows]);
     }
 
     public function detail(): void
