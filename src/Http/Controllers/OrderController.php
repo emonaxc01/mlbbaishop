@@ -18,7 +18,8 @@ class OrderController
     {
         $userId = $this->requireAuth();
         if (!$userId) {
-            return App::json(['error' => 'Unauthorized'], 401);
+            App::json(['error' => 'Unauthorized'], 401);
+            return;
         }
 
         $data = Request::json();
@@ -31,7 +32,8 @@ class OrderController
         $paymentMethod = substr(trim((string)($data['paymentMethod'] ?? '')), 0, 32);
 
         if ($game === '' || $productId === '' || $variationCode === '' || $playerId === '' || $amount <= 0 || $paymentMethod === '') {
-            return App::json(['error' => 'Invalid order data'], 422);
+            App::json(['error' => 'Invalid order data'], 422);
+            return;
         }
 
         $pdo = DB::conn();
@@ -39,14 +41,16 @@ class OrderController
         $stmt->execute([$userId, $game, $productId, $variationCode, $playerId, $amount, $currency, $paymentMethod]);
         $id = (int)$pdo->lastInsertId();
 
-        return App::json(['id' => $id, 'status' => 'paid']);
+        App::json(['id' => $id, 'status' => 'paid']);
+        return;
     }
 
     public function list(): void
     {
         $userId = $this->requireAuth();
         if (!$userId) {
-            return App::json(['error' => 'Unauthorized'], 401);
+            App::json(['error' => 'Unauthorized'], 401);
+            return;
         }
 
         $page = max(1, (int)($_GET['page'] ?? 1));
@@ -61,6 +65,7 @@ class OrderController
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return App::json(['page' => $page, 'limit' => $limit, 'orders' => $orders]);
+        App::json(['page' => $page, 'limit' => $limit, 'orders' => $orders]);
+        return;
     }
 }

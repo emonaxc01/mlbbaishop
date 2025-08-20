@@ -41,7 +41,10 @@ class AdminCatalogController
         $status = (int)($d['status'] ?? 1);
         $image_url = substr(trim((string)($d['image_url'] ?? '')), 0, 512);
         $desc = (string)($d['description'] ?? null);
-        if ($name === '' || $slug === '') return App::json(['error'=>'Invalid'],422);
+        if ($name === '' || $slug === '') {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         $pdo = DB::conn();
         if ($id>0) {
             $stmt = $pdo->prepare('UPDATE products SET name=?, slug=?, sku=?, price=?, stock=?, status=?, image_url=?, description=?, updated_at=NOW() WHERE id=?');
@@ -57,7 +60,10 @@ class AdminCatalogController
     {
         $this->requireAdmin();
         $id = (int)($_GET['id'] ?? 0);
-        if ($id<=0) return App::json(['error'=>'Invalid'],422);
+        if ($id<=0) {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         DB::conn()->prepare('DELETE FROM products WHERE id=?')->execute([$id]);
         App::json(['ok'=>true]);
     }
@@ -81,7 +87,10 @@ class AdminCatalogController
         $price = (float)($d['price'] ?? 0);
         $stock = (int)($d['stock'] ?? 0);
         $status = (int)($d['status'] ?? 1);
-        if ($pid<=0 || $name==='') return App::json(['error'=>'Invalid'],422);
+        if ($pid<=0 || $name==='') {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         $pdo = DB::conn();
         if ($id>0) {
             $stmt = $pdo->prepare('UPDATE product_variations SET name=?, sku=?, price=?, stock=?, status=?, updated_at=NOW() WHERE id=?');
@@ -97,7 +106,10 @@ class AdminCatalogController
     {
         $this->requireAdmin();
         $id = (int)($_GET['id'] ?? 0);
-        if ($id<=0) return App::json(['error'=>'Invalid'],422);
+        if ($id<=0) {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         DB::conn()->prepare('DELETE FROM product_variations WHERE id=?')->execute([$id]);
         App::json(['ok'=>true]);
     }
@@ -118,7 +130,10 @@ class AdminCatalogController
         $pid = (int)($d['product_id'] ?? 0);
         $k = substr(trim((string)($d['meta_key'] ?? '')), 0, 128);
         $v = (string)($d['meta_value'] ?? '');
-        if ($pid<=0 || $k==='') return App::json(['error'=>'Invalid'],422);
+        if ($pid<=0 || $k==='') {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         $pdo = DB::conn();
         if ($id>0) {
             $pdo->prepare('UPDATE product_meta SET meta_key=?, meta_value=?, updated_at=NOW() WHERE id=?')->execute([$k,$v,$id]);
@@ -132,7 +147,10 @@ class AdminCatalogController
     {
         $this->requireAdmin();
         $id = (int)($_GET['id'] ?? 0);
-        if ($id<=0) return App::json(['error'=>'Invalid'],422);
+        if ($id<=0) {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         DB::conn()->prepare('DELETE FROM product_meta WHERE id=?')->execute([$id]);
         App::json(['ok'=>true]);
     }
@@ -153,7 +171,10 @@ class AdminCatalogController
         $vid = (int)($d['variation_id'] ?? 0);
         $k = substr(trim((string)($d['meta_key'] ?? '')), 0, 128);
         $v = (string)($d['meta_value'] ?? '');
-        if ($vid<=0 || $k==='') return App::json(['error'=>'Invalid'],422);
+        if ($vid<=0 || $k==='') {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         $pdo = DB::conn();
         if ($id>0) {
             $pdo->prepare('UPDATE variation_meta SET meta_key=?, meta_value=?, updated_at=NOW() WHERE id=?')->execute([$k,$v,$id]);
@@ -167,7 +188,10 @@ class AdminCatalogController
     {
         $this->requireAdmin();
         $id = (int)($_GET['id'] ?? 0);
-        if ($id<=0) return App::json(['error'=>'Invalid'],422);
+        if ($id<=0) {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         DB::conn()->prepare('DELETE FROM variation_meta WHERE id=?')->execute([$id]);
         App::json(['ok'=>true]);
     }

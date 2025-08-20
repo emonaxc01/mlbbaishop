@@ -34,12 +34,18 @@ class CheckoutController
     public function createOrder(): void
     {
         $uid = $this->requireAuth();
-        if (!$uid) return App::json(['error'=>'Unauthorized'],401);
+        if (!$uid) {
+            App::json(['error'=>'Unauthorized'],401);
+            return;
+        }
 
         $data = Request::json();
         $items = $data['items'] ?? [];
         $method = (string)($data['paymentMethod'] ?? 'testpay');
-        if (!is_array($items) || count($items) === 0) return App::json(['error'=>'No items'],422);
+        if (!is_array($items) || count($items) === 0) {
+            App::json(['error'=>'No items'],422);
+            return;
+        }
 
         $pdo = DB::conn();
         $pdo->beginTransaction();

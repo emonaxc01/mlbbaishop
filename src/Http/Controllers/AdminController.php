@@ -56,7 +56,10 @@ class AdminController
         $code = substr(trim((string)($data['code'] ?? '')), 0, 64);
         $name = substr(trim((string)($data['name'] ?? '')), 0, 191);
         $status = (int)($data['status'] ?? 1);
-        if ($code === '' || $name === '') return App::json(['error' => 'Invalid'], 422);
+        if ($code === '' || $name === '') {
+            App::json(['error' => 'Invalid'], 422);
+            return;
+        }
         $pdo = DB::conn();
         if ($id > 0) {
             $stmt = $pdo->prepare('UPDATE products SET code=?, name=?, status=?, updated_at=NOW() WHERE id=?');
@@ -90,7 +93,10 @@ class AdminController
         $label = substr(trim((string)($data['label'] ?? '')), 0, 191);
         $diamonds = (int)($data['diamonds'] ?? 0);
         $price = (float)($data['price'] ?? 0);
-        if ($productId <= 0 || $code === '' || $label === '' || $diamonds <= 0 || $price <= 0) return App::json(['error' => 'Invalid'], 422);
+        if ($productId <= 0 || $code === '' || $label === '' || $diamonds <= 0 || $price <= 0) {
+            App::json(['error' => 'Invalid'], 422);
+            return;
+        }
         $pdo = DB::conn();
         if ($id > 0) {
             $stmt = $pdo->prepare('UPDATE packages SET code=?, label=?, diamonds=?, price=?, updated_at=NOW() WHERE id=?');
@@ -132,7 +138,10 @@ class AdminController
         $orderId = (int)($d['order_id'] ?? 0);
         $note = trim((string)($d['note'] ?? ''));
         $emailUser = (int)($d['email_user'] ?? 0) === 1;
-        if ($orderId<=0 || $note==='') return App::json(['error'=>'Invalid'],422);
+        if ($orderId<=0 || $note==='') {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         $pdo = DB::conn();
         $pdo->prepare('INSERT INTO order_notes (order_id, note, emailed, created_at) VALUES (?,?,?,NOW())')->execute([$orderId, $note, $emailUser?1:0]);
         if ($emailUser) {
@@ -215,7 +224,10 @@ class AdminController
         $is_admin = (int)($data['is_admin'] ?? 0);
         $is_verified = (int)($data['is_verified'] ?? 0);
         $wallet = (float)($data['wallet_balance'] ?? 0);
-        if ($id <= 0) return App::json(['error' => 'Invalid'], 422);
+        if ($id <= 0) {
+            App::json(['error' => 'Invalid'], 422);
+            return;
+        }
         $pdo = DB::conn();
         $stmt = $pdo->prepare('UPDATE users SET is_admin=?, is_verified=?, wallet_balance=?, updated_at = NOW() WHERE id = ?');
         $stmt->execute([$is_admin, $is_verified, $wallet, $id]);
@@ -258,7 +270,10 @@ class AdminController
         $rate = (float)($d['rate'] ?? 1);
         $is_default = (int)($d['is_default'] ?? 0);
         $enabled = (int)($d['enabled'] ?? 1);
-        if ($code === '' || $symbol === '' || $rate <= 0) return App::json(['error'=>'Invalid'],422);
+        if ($code === '' || $symbol === '' || $rate <= 0) {
+            App::json(['error'=>'Invalid'],422);
+            return;
+        }
         $pdo = DB::conn();
         if ($is_default === 1) { $pdo->exec('UPDATE currencies SET is_default = 0'); }
         if ($id>0) {

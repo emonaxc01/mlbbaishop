@@ -24,7 +24,8 @@ class AuthController
         $password = (string)($data['password'] ?? '');
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
-            return App::json(['error' => 'Invalid email or password'], 422);
+            App::json(['error' => 'Invalid email or password'], 422);
+            return;
         }
 
         $pdo = DB::conn();
@@ -36,7 +37,8 @@ class AuthController
 
             if ($existing && (int)$existing['is_verified'] === 1) {
                 $pdo->rollBack();
-                return App::json(['error' => 'Email already registered'], 409);
+                App::json(['error' => 'Email already registered'], 409);
+                return;
             }
 
             if ($existing) {
@@ -66,13 +68,16 @@ class AuthController
             );
 
             if (!$sent) {
-                return App::json(['error' => 'Failed to send verification email'], 500);
+                App::json(['error' => 'Failed to send verification email'], 500);
+                return;
             }
 
-            return App::json(['message' => 'Verification code sent']);
+            App::json(['message' => 'Verification code sent']);
+            return;
         } catch (\Throwable $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
-            return App::json(['error' => 'Registration failed'], 500);
+            App::json(['error' => 'Registration failed'], 500);
+            return;
         }
     }
 
@@ -84,7 +89,8 @@ class AuthController
         $code = trim((string)($data['code'] ?? ''));
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match('/^\d{6}$/', $code)) {
-            return App::json(['error' => 'Invalid input'], 422);
+            App::json(['error' => 'Invalid input'], 422);
+            return;
         }
 
         $pdo = DB::conn();
@@ -92,7 +98,8 @@ class AuthController
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$user) {
-            return App::json(['error' => 'User not found'], 404);
+            App::json(['error' => 'User not found'], 404);
+            return;
         }
 
         $userId = (int)$user['id'];
@@ -101,22 +108,26 @@ class AuthController
         $stmt->execute([$userId]);
         $otp = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$otp) {
-            return App::json(['error' => 'OTP not found'], 404);
+            App::json(['error' => 'OTP not found'], 404);
+            return;
         }
 
         if (strtotime($otp['expires_at']) < time()) {
-            return App::json(['error' => 'OTP expired'], 410);
+            App::json(['error' => 'OTP expired'], 410);
+            return;
         }
 
         // Simple attempt limit
         if ((int)$otp['attempts'] >= 5) {
-            return App::json(['error' => 'Too many attempts'], 429);
+            App::json(['error' => 'Too many attempts'], 429);
+            return;
         }
 
         $ok = password_verify($code, $otp['code_hash']);
         if (!$ok) {
             $pdo->prepare('UPDATE otps SET attempts = attempts + 1 WHERE id = ?')->execute([(int)$otp['id']]);
-            return App::json(['error' => 'Invalid code'], 401);
+            App::json(['error' => 'Invalid code'], 401);
+            return;
         }
 
         $pdo->beginTransaction();
@@ -126,14 +137,16 @@ class AuthController
             $pdo->commit();
         } catch (\Throwable $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
-            return App::json(['error' => 'Failed to verify'], 500);
+            App::json(['error' => 'Failed to verify'], 500);
+            return;
         }
 
         // Auto login
         $_SESSION['user_id'] = $userId;
         $_SESSION['email'] = $email;
 
-        return App::json(['message' => 'Verified', 'user' => ['email' => $email]]);
+        App::json(['message' => 'Verified', 'user' => ['email' => $email]]);
+        return;
     }
 
     public function login(): void
@@ -144,7 +157,8 @@ class AuthController
         $password = (string)($data['password'] ?? '');
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
-            return App::json(['error' => 'Invalid credentials'], 422);
+            App::json(['error' => 'Invalid credentials'], 422);
+            return;
         }
 
         $pdo = DB::conn();
@@ -152,18 +166,21 @@ class AuthController
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$user || !password_verify($password, $user['password'])) {
-            return App::json(['error' => 'Invalid credentials'], 401);
+            App::json(['error' => 'Invalid credentials'], 401);
+            return;
         }
 
         if ((int)$user['is_verified'] !== 1) {
-            return App::json(['error' => 'Email not verified'], 403);
+            App::json(['error' => 'Email not verified'], 403);
+            return;
         }
 
         $_SESSION['user_id'] = (int)$user['id'];
         $_SESSION['email'] = $email;
         $pdo->prepare('UPDATE users SET last_login_at = NOW() WHERE id = ?')->execute([(int)$user['id']]);
 
-        return App::json(['message' => 'Logged in']);
+        App::json(['message' => 'Logged in']);
+        return;
     }
 
     public function logout(): void
@@ -171,21 +188,24 @@ class AuthController
         $this->startSession();
         session_unset();
         session_destroy();
-        return App::json(['message' => 'Logged out']);
+        App::json(['message' => 'Logged out']);
+        return;
     }
 
     public function me(): void
     {
         $this->startSession();
         if (!isset($_SESSION['user_id'])) {
-            return App::json(['authenticated' => false]);
+            App::json(['authenticated' => false]);
+            return;
         }
-        return App::json([
+        App::json([
             'authenticated' => true,
             'user' => [
                 'id' => (int)$_SESSION['user_id'],
                 'email' => (string)($_SESSION['email'] ?? ''),
             ]
         ]);
+        return;
     }
 }
