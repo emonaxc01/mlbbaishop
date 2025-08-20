@@ -39,11 +39,10 @@ class Router
         if (is_array($handler) && count($handler) === 2) {
             [$class, $methodName] = $handler;
             
-            // Ensure we have the fully qualified class name
-            if (strpos($class, '\\') !== 0) {
-                $class = '\\' . $class;
-            }
+            // Debug: Log the class name
+            error_log("Router: Trying to instantiate class: '$class'");
             
+            // Use the class name as-is, it should already be fully qualified
             $instance = new $class();
             $instance->$methodName();
             return;
