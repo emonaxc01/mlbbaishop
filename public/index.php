@@ -25,10 +25,13 @@ Router::get('/api/auth/me', [App\Http\Controllers\AuthController::class, 'me']);
 // Orders
 Router::post('/api/orders', [App\Http\Controllers\OrderController::class, 'create']);
 Router::get('/api/orders', [App\Http\Controllers\OrderController::class, 'list']);
+Router::post('/api/checkout/orders', [App\Http\Controllers\CheckoutController::class, 'createOrder']);
 
 // Admin pages
 Router::get('/admin', [App\Http\Controllers\AdminController::class, 'dashboard']);
 Router::get('/admin/products', [App\Http\Controllers\AdminController::class, 'productsPage']);
+Router::get('/admin/catalog', [App\Http\Controllers\AdminCatalogController::class, 'productsPage']);
+Router::get('/admin/catalog/product', [App\Http\Controllers\AdminCatalogController::class, 'productDetailPage']);
 Router::get('/admin/orders', [App\Http\Controllers\AdminController::class, 'ordersPage']);
 Router::get('/admin/users', [App\Http\Controllers\AdminController::class, 'usersPage']);
 Router::get('/admin/settings', [App\Http\Controllers\AdminController::class, 'settingsPage']);
@@ -39,6 +42,22 @@ Router::post('/api/admin/products', [App\Http\Controllers\AdminController::class
 Router::get('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'listPackages']);
 Router::post('/api/admin/packages', [App\Http\Controllers\AdminController::class, 'upsertPackage']);
 Router::get('/api/admin/orders', [App\Http\Controllers\AdminController::class, 'listAllOrders']);
+Router::get('/api/catalog', [App\Http\Controllers\CatalogController::class, 'list']);
+Router::get('/api/catalog/detail', [App\Http\Controllers\CatalogController::class, 'detail']);
+
+// Admin catalog APIs
+Router::get('/api/admin/catalog/products', [App\Http\Controllers\AdminCatalogController::class, 'listProducts']);
+Router::post('/api/admin/catalog/product', [App\Http\Controllers\AdminCatalogController::class, 'saveProduct']);
+Router::get('/api/admin/catalog/product/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteProduct']);
+Router::get('/api/admin/catalog/variations', [App\Http\Controllers\AdminCatalogController::class, 'listVariations']);
+Router::post('/api/admin/catalog/variation', [App\Http\Controllers\AdminCatalogController::class, 'saveVariation']);
+Router::get('/api/admin/catalog/variation/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteVariation']);
+Router::get('/api/admin/catalog/product/meta', [App\Http\Controllers\AdminCatalogController::class, 'listProductMeta']);
+Router::post('/api/admin/catalog/product/meta', [App\Http\Controllers\AdminCatalogController::class, 'saveProductMeta']);
+Router::get('/api/admin/catalog/product/meta/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteProductMeta']);
+Router::get('/api/admin/catalog/variation/meta', [App\Http\Controllers\AdminCatalogController::class, 'listVariationMeta']);
+Router::post('/api/admin/catalog/variation/meta', [App\Http\Controllers\AdminCatalogController::class, 'saveVariationMeta']);
+Router::get('/api/admin/catalog/variation/meta/delete', [App\Http\Controllers\AdminCatalogController::class, 'deleteVariationMeta']);
 Router::get('/api/admin/users', [App\Http\Controllers\AdminController::class, 'listUsers']);
 Router::post('/api/admin/users', [App\Http\Controllers\AdminController::class, 'updateUser']);
 Router::get('/api/admin/settings', [App\Http\Controllers\AdminController::class, 'getSettings']);

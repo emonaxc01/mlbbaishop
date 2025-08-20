@@ -905,58 +905,8 @@
             PKR: { symbol: '₨', rate: 2.52 }
         };
 
-        // Game packages data (in base currency BDT)
-        const packages = {
-            freefire: [
-                { code: 'd25', label: '25 Diamonds', diamonds: 25, price: 50 },
-                { code: 'd50', label: '50 Diamonds', diamonds: 50, price: 100 },
-                { code: 'd115', label: '115 Diamonds', diamonds: 115, price: 220 },
-                { code: 'd230', label: '230 Diamonds', diamonds: 230, price: 420 },
-                { code: 'd610', label: '610 Diamonds', diamonds: 610, price: 1000 }
-            ],
-            mlbb: [
-                { code: 'd50', label: '50 Diamonds', diamonds: 50, price: 120 },
-                { code: 'd100', label: '100 Diamonds', diamonds: 100, price: 240 },
-                { code: 'd200', label: '200 Diamonds', diamonds: 200, price: 460 },
-                { code: 'd500', label: '500 Diamonds', diamonds: 500, price: 1100 }
-            ],
-            pubg: [
-                { code: 'd100', label: '100 UC', diamonds: 100, price: 110 },
-                { code: 'd250', label: '250 UC', diamonds: 250, price: 270 },
-                { code: 'd500', label: '500 UC', diamonds: 500, price: 530 },
-                { code: 'd1000', label: '1000 UC', diamonds: 1000, price: 1050 }
-            ],
-            cod: [
-                { code: 'd100', label: '100 CP', diamonds: 100, price: 120 },
-                { code: 'd200', label: '200 CP', diamonds: 200, price: 230 },
-                { code: 'd500', label: '500 CP', diamonds: 500, price: 550 },
-                { code: 'd1000', label: '1000 CP', diamonds: 1000, price: 1050 }
-            ],
-            genshin: [
-                { code: 'd60', label: '60 Crystals', diamonds: 60, price: 100 },
-                { code: 'd300', label: '300 Crystals', diamonds: 300, price: 450 },
-                { code: 'd980', label: '980 Crystals', diamonds: 980, price: 1400 },
-                { code: 'd1980', label: '1980 Crystals', diamonds: 1980, price: 2700 }
-            ],
-            valorant: [
-                { code: 'd125', label: '125 Points', diamonds: 125, price: 150 },
-                { code: 'd400', label: '400 Points', diamonds: 400, price: 450 },
-                { code: 'd1000', label: '1000 Points', diamonds: 1000, price: 1100 },
-                { code: 'd2050', label: '2050 Points', diamonds: 2050, price: 2200 }
-            ],
-            lol: [
-                { code: 'd125', label: '125 RP', diamonds: 125, price: 130 },
-                { code: 'd420', label: '420 RP', diamonds: 420, price: 430 },
-                { code: 'd940', label: '940 RP', diamonds: 940, price: 950 },
-                { code: 'd1650', label: '1650 RP', diamonds: 1650, price: 1700 }
-            ],
-            fortnite: [
-                { code: 'd100', label: '100 V-Bucks', diamonds: 100, price: 110 },
-                { code: 'd500', label: '500 V-Bucks', diamonds: 500, price: 520 },
-                { code: 'd1000', label: '1000 V-Bucks', diamonds: 1000, price: 1020 },
-                { code: 'd13500', label: '13500 V-Bucks', diamonds: 13500, price: 13500 }
-            ]
-        };
+        // DB-driven packages loaded from catalog API
+        const packages = {};
 
         // State management
         let state = {
@@ -1253,12 +1203,22 @@
         }
 
         // Render packages for selected game
-        function renderPackages() {
+        async function renderPackages() {
             if (!state.selectedGame) return;
             
             packagesContainer.innerHTML = '';
-            
-            const gamePackages = packages[state.selectedGame] || [];
+            // map selected game to a product slug
+            const gameToSlug = { freefire: 'free-fire-diamonds', mlbb: 'mlbb-diamonds', pubg: 'pubg-uc', cod: 'call-of-duty', genshin: 'genshin-crystals', valorant: 'valorant-points', lol: 'league-of-legends', fortnite: 'fortnite' };
+            const slug = gameToSlug[state.selectedGame] || state.selectedGame;
+            let gamePackages = [];
+            try {
+                const res = await fetch(`/api/catalog/detail?slug=${encodeURIComponent(slug)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    gamePackages = (data.variations||[]).map(v => ({ code: v.id, label: v.name, diamonds: 0, price: v.price }));
+                    state.productId = (data.product && data.product.id) ? String(data.product.id) : state.productId;
+                }
+            } catch (e) {}
             
             gamePackages.forEach(pkg => {
                 const convertedPrice = convertPrice(pkg.price);
@@ -1778,17 +1738,12 @@
                 showToast('Processing payment...');
                 try {
                     const convertedPrice = convertPrice(state.selectedPackage.price);
-                    const res = await apiRequest('/api/orders', 'POST', {
-                        game: state.selectedGame,
-                        productId: state.productId,
-                        variationCode: state.variationId,
-                        playerId: state.playerId,
-                        amount: Number(convertedPrice.toFixed(2)),
-                        currency: state.currentCurrency,
-                        paymentMethod: state.paymentMethod
+                    const res = await apiRequest('/api/checkout/orders', 'POST', {
+                        items: [{ productId: Number(state.productId), variationId: Number(state.variationId||0), quantity: 1 }],
+                        paymentMethod: state.paymentMethod || 'testpay'
                     });
                     orderModal.classList.add('hidden');
-                    orderId.textContent = 'ORD-' + res.id;
+                    orderId.textContent = 'ORD-' + res.orderId;
                     successPlayerId.textContent = state.playerId;
                     successAmount.textContent = `${formatCurrency(convertedPrice)} ${state.currentCurrency}`;
                     successModal.classList.remove('hidden');

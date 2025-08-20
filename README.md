@@ -35,7 +35,15 @@ APIs:
 - POST `/api/auth/verify-otp` { email, code } -> verifies and logs in
 - POST `/api/auth/login` { email, password }
 - POST `/api/auth/logout`
-- POST `/api/orders` { game, productId, variationCode, playerId, amount, currency, paymentMethod }
-- GET `/api/orders`
+- Catalog: GET `/api/catalog` (q, page, limit), GET `/api/catalog/detail?slug=...`
+- Checkout: POST `/api/checkout/orders` { items: [{ productId, variationId?, quantity }], paymentMethod }
+- Orders: GET `/api/orders`
 
 The UI in `index.php` is preserved and rendered via `views/home.php`.
+
+Admin (requires `is_admin=1` user):
+- Catalog CRUD: `/admin/catalog`, `/admin/catalog/product?id=...`
+- Users, Orders, Settings: `/admin/users`, `/admin/orders`, `/admin/settings`
+
+Installer:
+- Basic page at `/installer` (CLI steps recommended now); can be expanded to run migrations and write env.
