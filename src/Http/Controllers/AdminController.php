@@ -241,14 +241,14 @@ class AdminController
         $this->requireAdmin();
         $keys = ['site_title','maintenance_mode','site_logo_url','mail_host','mail_port','mail_username','mail_password','mail_from_address','mail_from_name'];
         $out = [];
-        foreach ($keys as $k) { $out[$k] = Settings::get($k, ''); }
+        foreach ($keys as $k) { $out[$k] = \App\Support\Settings::get($k, ''); }
         App::json($out);
     }
     public function saveSettings(): void
     {
         $this->requireAdmin();
         $data = Request::json();
-        foreach ($data as $k=>$v) { Settings::set($k, (string)$v); }
+        foreach ($data as $k=>$v) { \App\Support\Settings::set($k, (string)$v); }
         App::json(['ok'=>true]);
     }
 
@@ -329,7 +329,7 @@ class AdminController
         $target = $dir . '/logo.' . $ext;
         move_uploaded_file($file['tmp_name'], $target);
         $url = '/uploads/' . basename($target);
-        Settings::set('site_logo_url', $url);
+        \App\Support\Settings::set('site_logo_url', $url);
         App::json(['url'=>$url]);
     }
 }

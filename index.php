@@ -154,7 +154,7 @@ $isAdminPath = str_starts_with($path, '/admin') || str_starts_with($path, '/api/
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && !$isInstallerPath) {
     if (!$isAdminPath) {
         try {
-            $maintenance = App\Support\Settings::get('maintenance_mode', 'off');
+            $maintenance = \App\Support\Settings::get('maintenance_mode', 'off');
             if ($maintenance === 'on') {
                 http_response_code(503);
                 echo '<!doctype html><html><head><meta charset="utf-8"><title>Maintenance</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font-family:sans-serif;background:#f9fafb;color:#111827;display:flex;align-items:center;justify-content:center;height:100vh} .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:32px;box-shadow:0 10px 25px rgba(0,0,0,.05)}</style></head><body><div class="card"><h1 style="font-size:20px;margin:0 0 8px">We\'ll be back soon</h1><p>Site is under maintenance. Please check again later.</p></div></body></html>';
