@@ -10,20 +10,31 @@ class Settings
     public static function get(string $key, ?string $default = null): ?string
     {
         if (isset(self::$cache[$key])) return self::$cache[$key];
-        $pdo = DB::conn();
-        $stmt = $pdo->prepare('SELECT `value` FROM settings WHERE `key` = ?');
-        $stmt->execute([$key]);
-        $val = $stmt->fetchColumn();
-        if ($val === false) return $default;
-        self::$cache[$key] = (string)$val;
-        return (string)$val;
+        
+        try {
+            $pdo = DB::conn();
+            $stmt = $pdo->prepare('SELECT `value` FROM settings WHERE `key` = ?');
+            $stmt->execute([$key]);
+            $val = $stmt->fetchColumn();
+            if ($val === false) return $default;
+            self::$cache[$key] = (string)$val;
+            return (string)$val;
+        } catch (\Exception $e) {
+            // If settings table doesn't exist or other DB error, return default
+            return $default;
+        }
     }
 
     public static function set(string $key, string $value): void
     {
-        $pdo = DB::conn();
-        $stmt = $pdo->prepare('INSERT INTO settings (`key`, `value`, created_at, updated_at) VALUES (?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = NOW()');
-        $stmt->execute([$key, $value]);
-        self::$cache[$key] = $value;
+        try {
+            $pdo = DB::conn();
+            $stmt = $pdo->prepare('INSERT INTO settings (`key`, `value`, created_at, updated_at) VALUES (?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = NOW()');
+            $stmt->execute([$key, $value]);
+            self::$cache[$key] = $value;
+        } catch (\Exception $e) {
+            // If settings table doesn't exist or other DB error, just cache the value
+            self::$cache[$key] = $value;
+        }
     }
 }
