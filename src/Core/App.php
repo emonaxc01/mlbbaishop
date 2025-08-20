@@ -9,9 +9,6 @@ class App
     {
         self::$basePath = rtrim($basePath, '/');
 
-        // Register simple autoloader
-        SimpleAutoloader::register(self::$basePath);
-
         // Load .env file manually if dotenv is not available
         $this->loadEnv();
 

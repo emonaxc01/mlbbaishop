@@ -36,12 +36,21 @@ set_exception_handler(function($exception) {
     exit;
 });
 
-use App\Core\App;
-use App\Core\Router;
-
 // Use simple autoloader instead of vendor/autoload.php
 require_once __DIR__ . '/src/Core/SimpleAutoloader.php';
-App\Core\SimpleAutoloader::register(__DIR__);
+
+// Register autoloader with correct namespace
+spl_autoload_register(function($class) {
+    $basePath = __DIR__;
+    $file = $basePath . '/src/' . str_replace('\\', '/', $class) . '.php';
+    
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
+
+use App\Core\App;
+use App\Core\Router;
 
 // Bootstrap application
 $app = new App(__DIR__);

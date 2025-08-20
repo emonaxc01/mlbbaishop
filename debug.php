@@ -92,8 +92,18 @@ echo "SimpleAutoloader exists: " . (file_exists($autoloader_path) ? "✅ Yes" : 
 
 if (file_exists($autoloader_path)) {
     try {
+        // Use the same autoloader approach as index.php
         require_once $autoloader_path;
-        App\Core\SimpleAutoloader::register($base_path);
+        
+        // Register autoloader
+        spl_autoload_register(function($class) use ($base_path) {
+            $file = $base_path . '/src/' . str_replace('\\', '/', $class) . '.php';
+            
+            if (file_exists($file)) {
+                require_once $file;
+            }
+        });
+        
         echo "✅ SimpleAutoloader loaded successfully<br>";
         
         // Test loading a class
