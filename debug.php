@@ -95,13 +95,24 @@ if (file_exists($autoloader_path)) {
         // Use the same autoloader approach as index.php
         require_once $autoloader_path;
         
-        // Register autoloader
+        // Register autoloader with the same logic as index.php
         spl_autoload_register(function($class) use ($base_path) {
-            $file = $base_path . '/src/' . str_replace('\\', '/', $class) . '.php';
+            // Handle App namespace specifically
+            if (strpos($class, 'App\\') === 0) {
+                // Remove 'App\' prefix and convert to file path
+                $relativePath = substr($class, 4); // Remove 'App\'
+                $file = $base_path . '/src/' . str_replace('\\', '/', $relativePath) . '.php';
+            } else {
+                // For other namespaces, use standard mapping
+                $file = $base_path . '/src/' . str_replace('\\', '/', $class) . '.php';
+            }
             
             if (file_exists($file)) {
                 require_once $file;
+                return true;
             }
+            
+            return false;
         });
         
         echo "✅ SimpleAutoloader loaded successfully<br>";

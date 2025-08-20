@@ -39,7 +39,8 @@ class Router
         if (is_array($handler) && count($handler) === 2) {
             [$class, $methodName] = $handler;
             $instance = new $class();
-            return $instance->$methodName();
+            $instance->$methodName();
+            return;
         }
 
         http_response_code(500);
