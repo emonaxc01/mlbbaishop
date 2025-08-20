@@ -36,17 +36,24 @@ set_exception_handler(function($exception) {
     exit;
 });
 
-// Use simple autoloader instead of vendor/autoload.php
-require_once __DIR__ . '/src/Core/SimpleAutoloader.php';
-
-// Register autoloader with correct namespace
+// Register autoloader with correct namespace mapping
 spl_autoload_register(function($class) {
     $basePath = __DIR__;
+    
+    // Convert namespace to file path
     $file = $basePath . '/src/' . str_replace('\\', '/', $class) . '.php';
+    
+    // Debug: Log the class and file path (remove in production)
+    if (strpos($class, 'App\\') === 0) {
+        error_log("Autoloader: Loading class '$class' from file '$file'");
+    }
     
     if (file_exists($file)) {
         require_once $file;
+        return true;
     }
+    
+    return false;
 });
 
 use App\Core\App;
