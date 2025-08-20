@@ -1,8 +1,6 @@
 <?php
 namespace App\Core;
 
-use Dotenv\Dotenv;
-
 class App
 {
     public static string $basePath;
@@ -11,9 +9,15 @@ class App
     {
         self::$basePath = rtrim($basePath, '/');
 
+        // Register simple autoloader
+        SimpleAutoloader::register(self::$basePath);
+
+        // Try to load .env if dotenv is available
         if (file_exists(self::$basePath . '/.env')) {
-            $dotenv = Dotenv::createImmutable(self::$basePath);
-            $dotenv->safeLoad();
+            if (class_exists('\Dotenv\Dotenv')) {
+                $dotenv = \Dotenv\Dotenv::createImmutable(self::$basePath);
+                $dotenv->safeLoad();
+            }
         }
 
         date_default_timezone_set('UTC');
@@ -28,7 +32,7 @@ class App
         $viewPath = self::$basePath . '/views/' . $view . '.php';
         if (!file_exists($viewPath)) {
             http_response_code(500);
-            echo 'View not found';
+            echo 'View not found: ' . $viewPath;
             return;
         }
         require $viewPath;
