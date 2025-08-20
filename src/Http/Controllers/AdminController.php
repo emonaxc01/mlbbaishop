@@ -309,7 +309,7 @@ class AdminController
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
         $ext = strtolower($ext);
         if (!in_array($ext, ['png','jpg','jpeg','gif','svg'])) { http_response_code(400); echo 'Invalid type'; return; }
-        $dir = App::$basePath . '/public/uploads';
+        $dir = App::$basePath . '/uploads';
         if (!is_dir($dir)) mkdir($dir, 0775, true);
         $target = $dir . '/logo.' . $ext;
         move_uploaded_file($file['tmp_name'], $target);
