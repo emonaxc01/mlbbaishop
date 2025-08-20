@@ -839,6 +839,62 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-premium p-5 text-white flex items-center justify-between">
+                <h3 class="text-xl font-bold">Account</h3>
+                <button id="closeAuthModal" class="text-white/80 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="flex border-b mb-4">
+                    <button class="login-tab active px-4 py-2 rounded-t-lg" data-auth-tab="login">Login</button>
+                    <button class="login-tab px-4 py-2 rounded-t-lg" data-auth-tab="register">Register</button>
+                </div>
+                <div id="loginPanel">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" for="authLoginEmail">Email</label>
+                        <input id="authLoginEmail" type="email" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="you@example.com">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-1" for="authLoginPassword">Password</label>
+                        <input id="authLoginPassword" type="password" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="••••••••">
+                    </div>
+                    <button id="authLoginBtn" class="w-full bg-gradient-to-r from-primary to-premium text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition">Login</button>
+                </div>
+                <div id="registerPanel" class="hidden">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1" for="authRegisterEmail">Email</label>
+                        <input id="authRegisterEmail" type="email" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="you@example.com">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-1" for="authRegisterPassword">Password</label>
+                        <input id="authRegisterPassword" type="password" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="minimum 8 characters">
+                    </div>
+                    <button id="authRegisterBtn" class="w-full bg-gradient-to-r from-primary to-premium text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Verify Modal -->
+    <div id="otpModal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-premium p-5 text-white flex items-center justify-between">
+                <h3 class="text-xl font-bold">Verify Email</h3>
+                <button id="closeOtpModal" class="text-white/80 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Enter the 6-digit code sent to <span id="otpEmail" class="font-medium"></span>.</p>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-1" for="otpCode">OTP Code</label>
+                    <input id="otpCode" type="text" maxlength="6" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="123456">
+                </div>
+                <button id="verifyOtpBtn" class="w-full bg-gradient-to-r from-primary to-premium text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition">Verify</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Exchange rates (base currency: BDT)
         const exchangeRates = {
@@ -948,6 +1004,65 @@
         const mobileDropdown = document.getElementById('mobileDropdown');
         const mobileLogoutButton = document.getElementById('mobileLogoutButton');
         const bottomNavItems = document.querySelectorAll('.mobile-bottom-nav-item');
+        // Auth elements
+        const authModal = document.getElementById('authModal');
+        const closeAuthModal = document.getElementById('closeAuthModal');
+        const loginPanel = document.getElementById('loginPanel');
+        const registerPanel = document.getElementById('registerPanel');
+        const authLoginBtn = document.getElementById('authLoginBtn');
+        const authRegisterBtn = document.getElementById('authRegisterBtn');
+        const authLoginEmail = document.getElementById('authLoginEmail');
+        const authLoginPassword = document.getElementById('authLoginPassword');
+        const authRegisterEmail = document.getElementById('authRegisterEmail');
+        const authRegisterPassword = document.getElementById('authRegisterPassword');
+        const otpModal = document.getElementById('otpModal');
+        const closeOtpModal = document.getElementById('closeOtpModal');
+        const otpEmail = document.getElementById('otpEmail');
+        const otpCode = document.getElementById('otpCode');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        // Simple API helper
+        async function apiRequest(path, method = 'GET', body = null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(path, opts);
+            let data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok) {
+                const message = (data && (data.error || data.message)) || `Request failed (${res.status})`;
+                throw new Error(message);
+            }
+            return data;
+        }
+
+        function openAuthModal(defaultTab = 'login') {
+            if (defaultTab === 'register') {
+                loginPanel.classList.add('hidden');
+                registerPanel.classList.remove('hidden');
+                document.querySelectorAll('[data-auth-tab]').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-auth-tab="register"]').classList.add('active');
+            } else {
+                registerPanel.classList.add('hidden');
+                loginPanel.classList.remove('hidden');
+                document.querySelectorAll('[data-auth-tab]').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-auth-tab="login"]').classList.add('active');
+            }
+            authModal.classList.remove('hidden');
+        }
+
+        function closeAuth() { authModal.classList.add('hidden'); }
+        function openOtp(email) { otpEmail.textContent = email; otpModal.classList.remove('hidden'); }
+        function closeOtp() { otpModal.classList.add('hidden'); }
+
+        async function checkAuth() {
+            try {
+                const me = await apiRequest('/api/auth/me');
+                state.userLoggedIn = !!me.authenticated;
+                updateUserMenu();
+            } catch (e) {
+                state.userLoggedIn = false;
+                updateUserMenu();
+            }
+        }
 
         // Banner slider
         const slider = document.getElementById('slider');
@@ -1305,6 +1420,10 @@
             // User menu toggle
             userMenuButton.addEventListener('click', (e) => {
                 e.stopPropagation();
+                if (!state.userLoggedIn) {
+                    openAuthModal('login');
+                    return;
+                }
                 userDropdown.classList.toggle('show');
             });
             
@@ -1326,7 +1445,8 @@
             });
             
             // Logout button
-            logoutButton.addEventListener('click', () => {
+            logoutButton.addEventListener('click', async () => {
+                try { await apiRequest('/api/auth/logout', 'POST'); } catch (e) {}
                 state.userLoggedIn = false;
                 updateUserMenu();
                 showToast('Logged out successfully');
@@ -1334,12 +1454,81 @@
             });
             
             // Mobile logout button
-            mobileLogoutButton.addEventListener('click', () => {
+            mobileLogoutButton.addEventListener('click', async () => {
+                try { await apiRequest('/api/auth/logout', 'POST'); } catch (e) {}
                 state.userLoggedIn = false;
                 updateUserMenu();
                 mobileDropdown.classList.remove('show');
                 showToast('Logged out successfully');
                 saveStateToLocalStorage();
+            });
+
+            // Auth modal toggles
+            document.querySelectorAll('[data-auth-tab]').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const t = tab.getAttribute('data-auth-tab');
+                    if (t === 'login') {
+                        registerPanel.classList.add('hidden');
+                        loginPanel.classList.remove('hidden');
+                    } else {
+                        loginPanel.classList.add('hidden');
+                        registerPanel.classList.remove('hidden');
+                    }
+                    document.querySelectorAll('[data-auth-tab]').forEach(t2 => t2.classList.remove('active'));
+                    tab.classList.add('active');
+                });
+            });
+            closeAuthModal.addEventListener('click', closeAuth);
+            closeOtpModal.addEventListener('click', closeOtp);
+            
+            // Login
+            authLoginBtn.addEventListener('click', async () => {
+                const email = authLoginEmail.value.trim();
+                const password = authLoginPassword.value;
+                if (!email || !password) { showToast('Enter email and password'); return; }
+                try {
+                    await apiRequest('/api/auth/login', 'POST', { email, password });
+                    state.userLoggedIn = true;
+                    updateUserMenu();
+                    closeAuth();
+                    showToast('Logged in');
+                    saveStateToLocalStorage();
+                    updateCheckoutButton();
+                } catch (e) {
+                    showToast(e.message || 'Login failed');
+                }
+            });
+
+            // Register -> OTP
+            authRegisterBtn.addEventListener('click', async () => {
+                const email = authRegisterEmail.value.trim();
+                const password = authRegisterPassword.value;
+                if (!email || password.length < 8) { showToast('Use valid email and 8+ char password'); return; }
+                try {
+                    await apiRequest('/api/auth/register', 'POST', { email, password });
+                    openOtp(email);
+                    showToast('OTP sent to email');
+                } catch (e) {
+                    showToast(e.message || 'Register failed');
+                }
+            });
+
+            verifyOtpBtn.addEventListener('click', async () => {
+                const email = otpEmail.textContent.trim();
+                const code = otpCode.value.trim();
+                if (!/^[0-9]{6}$/.test(code)) { showToast('Enter 6-digit code'); return; }
+                try {
+                    await apiRequest('/api/auth/verify-otp', 'POST', { email, code });
+                    state.userLoggedIn = true;
+                    updateUserMenu();
+                    closeOtp();
+                    closeAuth();
+                    showToast('Email verified');
+                    saveStateToLocalStorage();
+                    updateCheckoutButton();
+                } catch (e) {
+                    showToast(e.message || 'Verification failed');
+                }
             });
             
             // Bottom navigation items
@@ -1584,26 +1773,28 @@
                 orderModal.classList.add('hidden');
             });
             
-            document.getElementById('confirmOrder').addEventListener('click', () => {
-                // Simulate API call to create order
+            document.getElementById('confirmOrder').addEventListener('click', async () => {
+                if (!state.userLoggedIn) { showToast('Login required'); return; }
                 showToast('Processing payment...');
-                
-                // Simulate payment processing
-                setTimeout(() => {
-                    orderModal.classList.add('hidden');
-                    
-                    // Generate random order ID
-                    const randomId = 'ORD-' + Math.floor(10000 + Math.random() * 90000);
-                    orderId.textContent = randomId;
-                    successPlayerId.textContent = state.playerId;
-                    
-                    // Update success amount
+                try {
                     const convertedPrice = convertPrice(state.selectedPackage.price);
+                    const res = await apiRequest('/api/orders', 'POST', {
+                        game: state.selectedGame,
+                        productId: state.productId,
+                        variationCode: state.variationId,
+                        playerId: state.playerId,
+                        amount: Number(convertedPrice.toFixed(2)),
+                        currency: state.currentCurrency,
+                        paymentMethod: state.paymentMethod
+                    });
+                    orderModal.classList.add('hidden');
+                    orderId.textContent = 'ORD-' + res.id;
+                    successPlayerId.textContent = state.playerId;
                     successAmount.textContent = `${formatCurrency(convertedPrice)} ${state.currentCurrency}`;
-                    
-                    // Show success modal
                     successModal.classList.remove('hidden');
-                }, 2000);
+                } catch (e) {
+                    showToast(e.message || 'Payment failed');
+                }
             });
             
             // Success modal button
@@ -1668,6 +1859,9 @@
             
             // Render packages for default selected game
             renderPackages();
+            
+            // Check session
+            checkAuth();
             
             // Simulate API call after 2 seconds
             setTimeout(() => {
