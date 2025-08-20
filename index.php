@@ -74,6 +74,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Define routes
 Router::get('/', ['\App\Http\Controllers\PageController', 'home']);
+Router::get('/game-topup', ['\App\Http\Controllers\PageController', 'gameTopUp']);
 
 // Auth
 Router::post('/api/auth/register', ['\App\Http\Controllers\AuthController', 'register']);
@@ -86,6 +87,22 @@ Router::get('/api/auth/me', ['\App\Http\Controllers\AuthController', 'me']);
 Router::post('/api/orders', ['\App\Http\Controllers\OrderController', 'create']);
 Router::get('/api/orders', ['\App\Http\Controllers\OrderController', 'list']);
 Router::post('/api/checkout/orders', ['\App\Http\Controllers\CheckoutController', 'createOrder']);
+
+// Game Top-Up APIs
+Router::get('/api/games', ['\App\Http\Controllers\GameTopUpController', 'getGames']);
+Router::get('/api/games/{slug}', ['\App\Http\Controllers\GameTopUpController', 'getGame']);
+Router::get('/api/games/{slug}/packages', ['\App\Http\Controllers\GameTopUpController', 'getGamePackages']);
+Router::get('/api/currencies', ['\App\Http\Controllers\GameTopUpController', 'getCurrencies']);
+Router::get('/api/exchange-rates', ['\App\Http\Controllers\GameTopUpController', 'getExchangeRates']);
+Router::post('/api/convert-price', ['\App\Http\Controllers\GameTopUpController', 'convertPrice']);
+Router::post('/api/orders/create', ['\App\Http\Controllers\GameTopUpController', 'createOrder']);
+Router::get('/api/orders/{identifier}', ['\App\Http\Controllers\GameTopUpController', 'getOrder']);
+Router::post('/api/orders/{userId}/user', ['\App\Http\Controllers\GameTopUpController', 'getUserOrders']);
+Router::put('/api/orders/{orderId}/status', ['\App\Http\Controllers\GameTopUpController', 'updateOrderStatus']);
+Router::post('/api/orders/{orderId}/notes', ['\App\Http\Controllers\GameTopUpController', 'addOrderNote']);
+Router::get('/api/orders/stats', ['\App\Http\Controllers\GameTopUpController', 'getOrderStats']);
+Router::post('/api/orders/search', ['\App\Http\Controllers\GameTopUpController', 'searchOrders']);
+Router::get('/api/orders/recent', ['\App\Http\Controllers\GameTopUpController', 'getRecentOrders']);
 
 // Admin pages
 Router::get('/admin', ['\App\Http\Controllers\AdminController', 'dashboard']);
