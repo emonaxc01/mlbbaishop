@@ -38,6 +38,12 @@ class Router
 
         if (is_array($handler) && count($handler) === 2) {
             [$class, $methodName] = $handler;
+            
+            // Ensure we have the fully qualified class name
+            if (strpos($class, '\\') !== 0) {
+                $class = '\\' . $class;
+            }
+            
             $instance = new $class();
             $instance->$methodName();
             return;
