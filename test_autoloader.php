@@ -5,10 +5,19 @@ ini_set('display_errors', '1');
 
 echo "<h1>Autoloader Test</h1>";
 
-// Register autoloader
+// Register autoloader with the same logic as index.php
 spl_autoload_register(function($class) {
     $basePath = __DIR__;
-    $file = $basePath . '/src/' . str_replace('\\', '/', $class) . '.php';
+    
+    // Handle App namespace specifically
+    if (strpos($class, 'App\\') === 0) {
+        // Remove 'App\' prefix and convert to file path
+        $relativePath = substr($class, 4); // Remove 'App\'
+        $file = $basePath . '/src/' . str_replace('\\', '/', $relativePath) . '.php';
+    } else {
+        // For other namespaces, use standard mapping
+        $file = $basePath . '/src/' . str_replace('\\', '/', $class) . '.php';
+    }
     
     echo "Trying to load class: $class<br>";
     echo "Looking for file: $file<br>";
@@ -56,6 +65,18 @@ try {
     }
 } catch (Exception $e) {
     echo "❌ Error loading DB class: " . $e->getMessage() . "<br>";
+}
+
+// Test loading a controller class
+echo "<h2>Testing App\Http\Controllers\InstallerController</h2>";
+try {
+    if (class_exists('App\Http\Controllers\InstallerController')) {
+        echo "✅ InstallerController class loaded successfully!<br>";
+    } else {
+        echo "❌ InstallerController class not found<br>";
+    }
+} catch (Exception $e) {
+    echo "❌ Error loading InstallerController class: " . $e->getMessage() . "<br>";
 }
 
 echo "<h2>Test Complete</h2>";

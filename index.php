@@ -40,8 +40,15 @@ set_exception_handler(function($exception) {
 spl_autoload_register(function($class) {
     $basePath = __DIR__;
     
-    // Convert namespace to file path
-    $file = $basePath . '/src/' . str_replace('\\', '/', $class) . '.php';
+    // Handle App namespace specifically
+    if (strpos($class, 'App\\') === 0) {
+        // Remove 'App\' prefix and convert to file path
+        $relativePath = substr($class, 4); // Remove 'App\'
+        $file = $basePath . '/src/' . str_replace('\\', '/', $relativePath) . '.php';
+    } else {
+        // For other namespaces, use standard mapping
+        $file = $basePath . '/src/' . str_replace('\\', '/', $class) . '.php';
+    }
     
     // Debug: Log the class and file path (remove in production)
     if (strpos($class, 'App\\') === 0) {
